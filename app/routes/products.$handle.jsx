@@ -15,7 +15,7 @@ import {getVariantUrl} from '~/utils';
  * @type {MetaFunction<typeof loader>}
  */
 export const meta = ({data}) => {
-  return [{title: `Hydrogen | ${data?.product.title ?? ''}`}];
+  return [{title: `THE T_SHIRT COMPANY | ${data?.product.title ?? ''}`}];
 };
 
 /**
@@ -230,8 +230,10 @@ function ProductForm({product, selectedVariant, variants}) {
         {({option}) => <ProductOptions key={option.name} option={option} />}
       </VariantSelector>
       <br />
+      {console.log(product.sellingPlanGroups.edges[0].node.sellingPlans.edges[0].node)}
       <AddToCartButton
         disabled={!selectedVariant || !selectedVariant.availableForSale}
+        sellingPlanId={(product.sellingPlanGroups) ? product.sellingPlanGroups.edges[0].node.sellingPlans.edges[0].node.id : null}
         onClick={() => {
           window.location.href = window.location.href + '#cart-aside';
         }}
@@ -364,6 +366,20 @@ const PRODUCT_FRAGMENT = `#graphql
     options {
       name
       values
+    }
+    sellingPlanGroups(first: 1) {
+      edges{
+        node{
+          sellingPlans(first: 1) {
+            edges {
+              node{
+                id,
+                name,
+              }
+            }
+          }
+        }
+      }
     }
     selectedVariant: variantBySelectedOptions(selectedOptions: $selectedOptions) {
       ...ProductVariant
