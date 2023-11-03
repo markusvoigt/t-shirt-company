@@ -1,4 +1,5 @@
-import {Suspense} from 'react';
+/* eslint-disable prettier/prettier */
+import {Suspense, useState} from 'react';
 import {defer, redirect} from '@shopify/remix-oxygen';
 import {Await, Link, useLoaderData} from '@remix-run/react';
 
@@ -17,6 +18,7 @@ import {getVariantUrl} from '~/utils';
 export const meta = ({data}) => {
   return [{title: `THE T-SHIRT COMPANY | ${data?.product.title ?? ''}`}];
 };
+
 
 /**
  * @param {LoaderFunctionArgs}
@@ -220,6 +222,7 @@ function ProductPrice({selectedVariant}) {
  * }}
  */
 function ProductForm({product, selectedVariant, variants}) {
+  const [customization, setCustomization] = useState([]);
   return (
     <div className="product-form">
       <VariantSelector
@@ -231,6 +234,17 @@ function ProductForm({product, selectedVariant, variants}) {
       </VariantSelector>
       <br />
       {(selectedVariant.sellingPlanAllocations.edges.length>0) && <p>{`Subscription: ${selectedVariant.sellingPlanAllocations?.edges[0].node.sellingPlan.name}`}</p>}
+
+      {(selectedVariant.product.metafield?.key=="customization") && (
+        <div className="customization">
+          <p><b>Add your customization:</b></p>
+          <input type="text" id="customization.name" placeholder="Your name:" onChange={(e) => {
+            setCustomization([selectedVariant.product.metafield?.value,e.target.value]);
+        }}
+            >
+            </input>
+        </div>
+      )}
       <AddToCartButton
         disabled={!selectedVariant || !selectedVariant.availableForSale}
         onClick={() => {
@@ -242,15 +256,16 @@ function ProductForm({product, selectedVariant, variants}) {
                 {
                   merchandiseId: selectedVariant.id,
                   quantity: 1,
-                  sellingPlanId: (selectedVariant.sellingPlanAllocations.edges.length>0) ? selectedVariant.sellingPlanAllocations?.edges[0].node.sellingPlan.id : null
-                },
+                  sellingPlanId: (selectedVariant.sellingPlanAllocations.edges.length>0) ? selectedVariant.sellingPlanAllocations?.edges[0].node.sellingPlan.id : null,
+                  attributes: (customization.length>0) ? [{"key":customization[0],"value":customization[1]}] : null
+                }
               ]
             : []
         }
       >
         {selectedVariant?.availableForSale ? 'Add to cart' : 'Sold out'}
       </AddToCartButton>
-      {selectedVariant.storeAvailability.edges.length > 0 && (
+      {selectedVariant.storeAvailability.edges[0].node.available && (
         <div className="local-pickup">
           <p>
             <b>Available for Local Pickup at:</b>
@@ -357,6 +372,10 @@ const PRODUCT_VARIANT_FRAGMENT = `#graphql
     product {
       title
       handle
+      metafield(key:"customization",namespace: "custom"){
+      key,
+      value
+    }
     }
     selectedOptions {
       name
@@ -376,6 +395,7 @@ const PRODUCT_VARIANT_FRAGMENT = `#graphql
       edges{
         node{
           quantityAvailable,
+          available
           location{
             name,
             address{

@@ -200,7 +200,12 @@ aside li {
   margin-top:35px;
   background-color:white;
 }
-
+.customization{
+  padding: 20px;
+  background-color: #F3F3F3;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
 /*
 * --------------------------------------------------
 * components/Cart
