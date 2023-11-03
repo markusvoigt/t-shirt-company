@@ -15,7 +15,7 @@ import {getVariantUrl} from '~/utils';
  * @type {MetaFunction<typeof loader>}
  */
 export const meta = ({data}) => {
-  return [{title: `THE T_SHIRT COMPANY | ${data?.product.title ?? ''}`}];
+  return [{title: `THE T-SHIRT COMPANY | ${data?.product.title ?? ''}`}];
 };
 
 /**
@@ -230,10 +230,9 @@ function ProductForm({product, selectedVariant, variants}) {
         {({option}) => <ProductOptions key={option.name} option={option} />}
       </VariantSelector>
       <br />
-      {console.log(product.sellingPlanGroups.edges[0].node.sellingPlans.edges[0].node)}
+      {product.sellingPlanGroups && <p>{`Subscription: ${selectedVariant.sellingPlanAllocations.edges[0].node.sellingPlan.name}`}</p>}
       <AddToCartButton
         disabled={!selectedVariant || !selectedVariant.availableForSale}
-        sellingPlanId={(product.sellingPlanGroups) ? product.sellingPlanGroups.edges[0].node.sellingPlans.edges[0].node.id : null}
         onClick={() => {
           window.location.href = window.location.href + '#cart-aside';
         }}
@@ -243,6 +242,9 @@ function ProductForm({product, selectedVariant, variants}) {
                 {
                   merchandiseId: selectedVariant.id,
                   quantity: 1,
+                  sellingPlanId: selectedVariant.sellingPlanAllocations
+                    ? selectedVariant.sellingPlanAllocations.edges[0].node.sellingPlan.id
+                    : null,
                 },
               ]
             : []
@@ -345,6 +347,16 @@ const PRODUCT_VARIANT_FRAGMENT = `#graphql
     selectedOptions {
       name
       value
+    }
+    sellingPlanAllocations(first:1) {
+      edges{
+        node{
+          sellingPlan{
+            id,
+            name,
+          }
+        }
+      }
     }
     sku
     title
