@@ -230,7 +230,7 @@ function ProductForm({product, selectedVariant, variants}) {
         {({option}) => <ProductOptions key={option.name} option={option} />}
       </VariantSelector>
       <br />
-      {product.sellingPlanGroups && <p>{`Subscription: ${selectedVariant.sellingPlanAllocations.edges[0].node.sellingPlan.name}`}</p>}
+      {(selectedVariant.sellingPlanAllocations.edges.length>0) && <p>{`Subscription: ${selectedVariant.sellingPlanAllocations?.edges[0].node.sellingPlan.name}`}</p>}
       <AddToCartButton
         disabled={!selectedVariant || !selectedVariant.availableForSale}
         onClick={() => {
@@ -242,9 +242,7 @@ function ProductForm({product, selectedVariant, variants}) {
                 {
                   merchandiseId: selectedVariant.id,
                   quantity: 1,
-                  sellingPlanId: selectedVariant.sellingPlanAllocations
-                    ? selectedVariant.sellingPlanAllocations.edges[0].node.sellingPlan.id
-                    : null,
+                  sellingPlanId: (selectedVariant.sellingPlanAllocations.edges.length>0) ? selectedVariant.sellingPlanAllocations?.edges[0].node.sellingPlan.id : null
                 },
               ]
             : []
@@ -252,6 +250,22 @@ function ProductForm({product, selectedVariant, variants}) {
       >
         {selectedVariant?.availableForSale ? 'Add to cart' : 'Sold out'}
       </AddToCartButton>
+      {selectedVariant.storeAvailability.edges.length > 0 && (
+        <div className="local-pickup">
+          <p>
+            <b>Available for Local Pickup at:</b>
+          </p>
+      <p>{`${selectedVariant.storeAvailability.edges[0].node.location.name}`}</p>
+      <p>{`${selectedVariant.storeAvailability.edges[0].node.location.address.address1}, ${selectedVariant.storeAvailability.edges[0].node.location.address.city}`}</p>
+          <p>
+            <a
+              href={`https://maps.google.com/?q=${selectedVariant.storeAvailability.edges[0].node.location.address.address1}, ${selectedVariant.storeAvailability.edges[0].node.location.address.city}`}
+            >
+              Show on map
+            </a>
+          </p>
+      </div>
+    )}
     </div>
   );
 }
@@ -354,6 +368,20 @@ const PRODUCT_VARIANT_FRAGMENT = `#graphql
           sellingPlan{
             id,
             name,
+          }
+        }
+      }
+    }
+    storeAvailability(first:1) {
+      edges{
+        node{
+          quantityAvailable,
+          location{
+            name,
+            address{
+              address1,
+              city
+            }
           }
         }
       }

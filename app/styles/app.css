@@ -196,6 +196,10 @@ aside li {
 .footer-menu a {
   color: var(--color-light);
 }
+.local-pickup{
+  margin-top:35px;
+  background-color:white;
+}
 
 /*
 * --------------------------------------------------
