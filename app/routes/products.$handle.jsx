@@ -107,14 +107,18 @@ function redirectToFirstVariant({product, request}) {
 export default function Product() {
   /** @type {LoaderReturnData} */
   const {product, variants} = useLoaderData();
+  const [customization, setCustomization] = useState([]);
   const {selectedVariant} = product;
   return (
     <div className="product">
-      <ProductImage image={selectedVariant?.image} />
+      <ProductImage image={selectedVariant?.image} customization={customization}
+        setCustomization={setCustomization} />
       <ProductMain
         selectedVariant={selectedVariant}
         product={product}
         variants={variants}
+        customization={customization}
+        setCustomization={setCustomization}
       />
     </div>
   );
@@ -123,7 +127,7 @@ export default function Product() {
 /**
  * @param {{image: ProductVariantFragment['image']}}
  */
-function ProductImage({image}) {
+function ProductImage({image,customization}) {
   if (!image) {
     return <div className="product-image" />;
   }
@@ -136,6 +140,7 @@ function ProductImage({image}) {
         key={image.id}
         sizes="(min-width: 45em) 50vw, 100vw"
       />
+      <p className="customization_preview">{(customization.length>0) ? customization[1] : ""}</p>
     </div>
   );
 }
@@ -147,7 +152,7 @@ function ProductImage({image}) {
  *   variants: Promise<ProductVariantsQuery>;
  * }}
  */
-function ProductMain({selectedVariant, product, variants}) {
+function ProductMain({selectedVariant, product, variants, customization, setCustomization}) {
   const {title, descriptionHtml} = product;
   return (
     <div className="product-main">
@@ -160,6 +165,8 @@ function ProductMain({selectedVariant, product, variants}) {
             product={product}
             selectedVariant={selectedVariant}
             variants={[]}
+            customization={customization}
+            setCustomization={setCustomization}
           />
         }
       >
@@ -172,6 +179,8 @@ function ProductMain({selectedVariant, product, variants}) {
               product={product}
               selectedVariant={selectedVariant}
               variants={data.product?.variants.nodes || []}
+              customization={customization}
+              setCustomization={setCustomization}
             />
           )}
         </Await>
@@ -221,8 +230,8 @@ function ProductPrice({selectedVariant}) {
  *   variants: Array<ProductVariantFragment>;
  * }}
  */
-function ProductForm({product, selectedVariant, variants}) {
-  const [customization, setCustomization] = useState([]);
+function ProductForm({product, selectedVariant, variants,customization, setCustomization}) {
+ // const [customization, setCustomization] = useState([]);
   return (
     <div className="product-form">
       <VariantSelector
